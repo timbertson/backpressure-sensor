@@ -8,6 +8,10 @@ val monixDeps = List(
     "org.typelevel" %% "cats-effect" % catsVersion,
     "io.monix" %% "monix" % monixVersion,
 )
+val weaverDeps = List(
+  "com.disneystreaming" %% "weaver-cats" % weaverVersion,
+  "com.disneystreaming" %% "weaver-monix" % weaverVersion,
+)
 
 ThisBuild / versionScheme := Some("semver-spec")
 
@@ -15,10 +19,6 @@ lazy val commonSettings = Seq(
   organization := "net.gfxmonk",
   testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
   testFrameworks += new TestFramework("weaver.framework.Monix"),
-  libraryDependencies ++= Seq(
-    "com.disneystreaming" %% "weaver-cats" % weaverVersion % Test,
-    "com.disneystreaming" %% "weaver-monix" % weaverVersion % Test,
-  ) ++ monixDeps.map(_ % Test),
 )
 
 lazy val core = (project in file("core")).settings(
@@ -31,6 +31,7 @@ lazy val testkit = (project in file("testkit")).settings(
   commonSettings,
   publicProjectSettings,
   name := "backpressure-sensor-testkit",
+  libraryDependencies ++= monixDeps ++ weaverDeps,
 ).dependsOn(core)
 
 lazy val statsd = (project in file("statsd")).settings(
@@ -47,7 +48,7 @@ lazy val monix = (project in file("monix")).settings(
   publicProjectSettings,
   name := "backpressure-sensor-monix",
   libraryDependencies ++= monixDeps,
-).dependsOn(core, testkit % Test, statsd)
+).dependsOn(core, statsd, testkit % Test)
 
 lazy val akka = (project in file("akka")).settings(
   commonSettings,
@@ -56,7 +57,7 @@ lazy val akka = (project in file("akka")).settings(
   libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-stream" % "2.6.15",
   ),
-).dependsOn(core, testkit % Test, statsd)
+).dependsOn(core, statsd, testkit % Test)
 
 lazy val root = (project in file("."))
   .settings(

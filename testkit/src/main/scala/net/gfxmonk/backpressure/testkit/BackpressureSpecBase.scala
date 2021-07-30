@@ -55,7 +55,9 @@ trait BackpressureSpecBase extends SimpleTaskSuite {
       postSleep = time => Task.sleep((time * time).micros).as(time),
     )
 
-    val tick = Task(ctx.scheduler.tick(99.days))
+    val tick = Task {
+      ctx.scheduler.tick(1.micros)
+    }
     def tickForever: Task[Nothing] = tick >> Task.sleep(100.millis) >> tickForever
 
     val run = Task.race(
