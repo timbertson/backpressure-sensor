@@ -2,14 +2,16 @@
 // You should NOT edit it manually, your changes will be lost.
 
 ThisBuild / scalaVersion := "2.13.6"
-ThisBuild / homepage := Some(url(s"https://github.com/timbertson/auditspec"))
+ThisBuild / homepage := Some(url(s"https://github.com/timbertson/backpressure-sensor"))
 ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/timbertson/capsul"),
-    s"scm:git@github.com:timbertson/auditspec.git"
+    s"scm:git@github.com:timbertson/backpressure-sensor.git"
   )
 )
-ThisBuild / version := IO.read(new File("VERSION")).trim()
+import scala.util.Try
+
+ThisBuild / version := Try(IO.read(new File("VERSION")).trim()).getOrElse("0.0.0-SNAPSHOT")
 
 sonatypeProfileName := "net.gfxmonk"
 

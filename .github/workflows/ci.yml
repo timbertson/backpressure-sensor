@@ -24,24 +24,24 @@ jobs:
       run: |-
         set -eu -o pipefail
         set -x
-        docker pull "docker.pkg.github.com/timbertson/auditspec/app:latest" || true
-        docker pull "docker.pkg.github.com/timbertson/auditspec/app:$(echo "${BRANCH_REF#refs/heads/}" | tr / -)" || true
-        docker "build" "--progress=plain" "--file=Dockerfile" "--cache-from=docker.pkg.github.com/timbertson/auditspec/app:latest" "--cache-from=docker.pkg.github.com/timbertson/auditspec/app:$(echo "${BRANCH_REF#refs/heads/}" | tr / -)" "--tag=docker.pkg.github.com/timbertson/auditspec/app:$GITHUB_SHA" "--tag=docker.pkg.github.com/timbertson/auditspec/app:$(echo "${BRANCH_REF#refs/heads/}" | tr / -)" "."
-        docker push "docker.pkg.github.com/timbertson/auditspec/app:$GITHUB_SHA"
-        docker push "docker.pkg.github.com/timbertson/auditspec/app:$(echo "${BRANCH_REF#refs/heads/}" | tr / -)"
+        docker pull "docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:latest" || true
+        docker pull "docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:$(echo "${BRANCH_REF#refs/heads/}" | tr / -)" || true
+        docker "build" "--progress=plain" "--file=Dockerfile" "--cache-from=docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:latest" "--cache-from=docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:$(echo "${BRANCH_REF#refs/heads/}" | tr / -)" "--tag=docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:$GITHUB_SHA" "--tag=docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:$(echo "${BRANCH_REF#refs/heads/}" | tr / -)" "."
+        docker push "docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:$GITHUB_SHA"
+        docker push "docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:$(echo "${BRANCH_REF#refs/heads/}" | tr / -)"
     - if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref
         == 'refs/heads/master')
       name: Docker push :latest
       run: |-
         set -eu -o pipefail
         set -x
-        docker tag "docker.pkg.github.com/timbertson/auditspec/app:$GITHUB_SHA" "docker.pkg.github.com/timbertson/auditspec/app:latest"
-        docker push "docker.pkg.github.com/timbertson/auditspec/app:latest"
+        docker tag "docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:$GITHUB_SHA" "docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:latest"
+        docker push "docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:latest"
     - name: Test
       run: |-
         set -eu -o pipefail
         set -x
-        docker run --rm -i "docker.pkg.github.com/timbertson/auditspec/app:$GITHUB_SHA" bash -eu -o pipefail <<EOF_runInDocker
+        docker run --rm -i "docker.pkg.github.com/timbertson/backpressure-sensor/backpressure-sensor:$GITHUB_SHA" bash -eu -o pipefail <<EOF_runInDocker
           sbt 'strict compile' test
 
         EOF_runInDocker
