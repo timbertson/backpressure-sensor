@@ -14,7 +14,7 @@ import scala.concurrent.duration.DurationInt
 import scala.util.Success
 
 object MonixBackpressureSensorSpec extends SimpleTaskSuite {
-  class TestStats extends StatsClient {
+  private [backpressure] class TestStats extends StatsClient {
     private val ints_ = ListBuffer[(IntegerMetric, Cause, Long)]()
 
     def ints = ints_.toList
