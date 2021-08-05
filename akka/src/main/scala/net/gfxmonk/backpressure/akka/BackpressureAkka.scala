@@ -1,7 +1,8 @@
 package net.gfxmonk.backpressure.akka
 
 import _root_.akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
-import _root_.akka.stream.{Attributes, FlowShape, Inlet, Outlet}
+import _root_.akka.stream.{Attributes, FlowShape, Graph, Inlet, Outlet}
+import akka.NotUsed
 import com.timgroup.statsd.StatsDClient
 import net.gfxmonk.backpressure.internal
 import net.gfxmonk.backpressure.internal.{Clock, Logic, StatsClient}
@@ -14,7 +15,7 @@ object BackpressureSensor {
     new BackpressureSensor(statsDClient, sampleRate)
   }
 
-  private [backpressure] def flow[T](clock: Clock, stats: StatsClient) : GraphStage[FlowShape[T, T]] = {
+  private [backpressure] def flow[T](clock: Clock, stats: StatsClient) : Graph[FlowShape[T, T], NotUsed] = {
     new AkkaFlow[T](new Logic(clock, stats))
   }
 
@@ -48,7 +49,7 @@ object BackpressureSensor {
 }
 
 class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double) {
-  def flow[T](metricPrefix: String, tags: Map[String, String] = Map.empty) : GraphStage[FlowShape[T, T]] = {
+  def flow[T](metricPrefix: String, tags: Map[String, String] = Map.empty) : Graph[FlowShape[T, T], NotUsed] = {
     val stats = new StatsdImpl(statsClient,
       metricPrefix = metricPrefix,
       tags = tags,
@@ -57,6 +58,6 @@ class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double) 
     val clockImpl = new internal.Clock {
       override def microsMonotonic(): Long = System.nanoTime() * 1000000L
     }
-    BackpressureSensor.flow(clockImpl, stats)
+    BackpressureSensor.flow[T](clockImpl, stats)
   }
 }
