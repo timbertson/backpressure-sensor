@@ -53,9 +53,15 @@ lazy val akka = (project in file("akka")).settings(
   ),
 ).dependsOn(core, statsd)
 
+lazy val example = (project in file("example")).settings(
+  commonSettings,
+  hiddenProjectSettings,
+  name := "backpressure-sensor-example",
+).dependsOn(monix)
+
 lazy val root = (project in file("."))
   .settings(
     name := "root",
     hiddenProjectSettings
   )
-  .aggregate(core, statsd, monix, akka)
+  .aggregate(core, statsd, monix, akka, example)
