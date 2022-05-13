@@ -34,9 +34,9 @@ object BackpressureSensorTestMain extends TaskApp {
 
   private def runTest[I, O](
     name: String,
-    upstreamInterval: FiniteDuration = Duration.Zero,
+    upstreamInterval: FiniteDuration,
     upstreamVariance: FiniteDuration = Duration.Zero,
-    downstreamInterval: FiniteDuration = Duration.Zero,
+    downstreamInterval: FiniteDuration,
     downstreamVariance: FiniteDuration = Duration.Zero,
     numItems: Int = 20000,
   ) =
@@ -51,7 +51,7 @@ object BackpressureSensorTestMain extends TaskApp {
         .liftByOperator(sensor.operator("backpressure.sensor.example", Map("pipeline" -> name)))
         .delayOnNext(downstreamInterval)
         .mapEval(delayUpto(downstreamVariance))
-        .take(numItems)
+        .take(numItems.toLong)
         .completedL
       _ <- Task(println(s"finish: ${name}"))
     } yield ()

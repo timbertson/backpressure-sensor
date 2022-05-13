@@ -21,12 +21,12 @@ private [backpressure] object Metric {
 }
 
 private [backpressure] trait StatsClient {
-  def measure(metric: IntegerMetric, cause: Cause, value: Long)
-  def measure(metric: FloatMetric, cause: Cause, value: Double)
+  def measure(metric: IntegerMetric, cause: Cause, value: Long): Unit
+  def measure(metric: FloatMetric, cause: Cause, value: Double): Unit
 }
 
 private [backpressure] class Logic(clock: Clock, stats: StatsClient) {
-  private def time() = clock.microsMonotonic
+  private def time() = clock.microsMonotonic()
 
   private val lastEventTime = new AtomicLong(time())
   private val lastWaitDuration = new AtomicLong(0L)
