@@ -56,7 +56,7 @@ class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double, 
       sampleRate = sampleRate
     )
     val clockImpl = new internal.Clock {
-      override def microsMonotonic(): Long = System.nanoTime() * 1000000L
+      override def microsMonotonic(): Long = System.nanoTime() / 1000L
     }
     BackpressureSensor.flow[T](clockImpl, stats)
   }
