@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.Future
 
 object BackpressureSensor {
-  def apply(statsDClient: StatsDClient, sampleRate: Double = 1.0): BackpressureSensor = {
-    new BackpressureSensor(statsDClient, sampleRate)
+  def apply(statsDClient: StatsDClient, sampleRate: Double = 1.0, baseTags: Map[String, String] = Map.empty): BackpressureSensor = {
+    new BackpressureSensor(statsDClient, sampleRate, baseTags)
   }
 
   private [backpressure] def operator[T](stats: StatsClient) : Operator[T,T] = {
@@ -43,12 +43,12 @@ object BackpressureSensor {
   }
 }
 
-class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double) {
+class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double, baseTags: Map[String, String]) {
 
   def operator[T](metricPrefix: String, tags: Map[String,String] = Map.empty) : Operator[T,T] = {
     val stats = new StatsdImpl(statsClient,
       metricPrefix = metricPrefix,
-      tags = tags,
+      tags = baseTags ++ tags,
       sampleRate = sampleRate
     )
     BackpressureSensor.operator(stats)
