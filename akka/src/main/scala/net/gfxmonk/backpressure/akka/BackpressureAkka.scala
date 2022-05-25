@@ -11,8 +11,8 @@ import net.gfxmonk.backpressure.internal.statsd.StatsdImpl
 import java.util.concurrent.atomic.AtomicLong
 
 object BackpressureSensor {
-  def apply(statsDClient: StatsDClient, sampleRate: Double = 1.0): BackpressureSensor = {
-    new BackpressureSensor(statsDClient, sampleRate)
+  def apply(statsDClient: StatsDClient, sampleRate: Double = 1.0, baseTags: Map[String, String] = Map.empty): BackpressureSensor = {
+    new BackpressureSensor(statsDClient, sampleRate, baseTags)
   }
 
   private [backpressure] def flow[T](clock: Clock, stats: StatsClient) : Graph[FlowShape[T, T], NotUsed] = {
@@ -48,15 +48,15 @@ object BackpressureSensor {
   }
 }
 
-class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double) {
+class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double, baseTags: Map[String, String]) {
   def flow[T](metricPrefix: String, tags: Map[String, String] = Map.empty) : Graph[FlowShape[T, T], NotUsed] = {
     val stats = new StatsdImpl(statsClient,
       metricPrefix = metricPrefix,
-      tags = tags,
+      tags = baseTags ++ tags,
       sampleRate = sampleRate
     )
     val clockImpl = new internal.Clock {
-      override def microsMonotonic(): Long = System.nanoTime() * 1000000L
+      override def microsMonotonic(): Long = System.nanoTime() / 1000L
     }
     BackpressureSensor.flow[T](clockImpl, stats)
   }
