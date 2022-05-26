@@ -5,8 +5,9 @@ import _root_.monix.execution.{Ack, Scheduler}
 import _root_.monix.reactive.Observable.Operator
 import _root_.monix.reactive.observers.Subscriber
 import com.timgroup.statsd.StatsDClient
-import net.gfxmonk.backpressure.internal.{Clock, Logic, StatsClient, StatsClientBuilder}
+import net.gfxmonk.backpressure.internal.{Clock, Logic}
 import net.gfxmonk.backpressure.internal.statsd.StatsdImpl
+import net.gfxmonk.backpressure.stats.{StatsClient, StatsClientBuilder}
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.Future

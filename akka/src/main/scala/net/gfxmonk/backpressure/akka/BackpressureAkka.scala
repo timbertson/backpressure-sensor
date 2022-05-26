@@ -5,8 +5,9 @@ import _root_.akka.stream.{Attributes, FlowShape, Graph, Inlet, Outlet}
 import akka.NotUsed
 import com.timgroup.statsd.StatsDClient
 import net.gfxmonk.backpressure.internal
-import net.gfxmonk.backpressure.internal.{Clock, Logic, StatsClient, StatsClientBuilder}
+import net.gfxmonk.backpressure.internal.{Clock, Logic}
 import net.gfxmonk.backpressure.internal.statsd.StatsdImpl
+import net.gfxmonk.backpressure.stats.{StatsClient, StatsClientBuilder}
 
 import java.util.concurrent.atomic.AtomicLong
 

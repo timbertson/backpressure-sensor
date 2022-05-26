@@ -6,35 +6,17 @@ import monix.reactive.Observable
 import net.gfxmonk.backpressure.internal.Cause.{Busy, Waiting}
 import net.gfxmonk.backpressure.internal.Metric.{Duration, Load, Variance}
 import net.gfxmonk.backpressure.internal._
+import net.gfxmonk.backpressure.stats.TestStatsClient
 import weaver.monixcompat.SimpleTaskSuite
 
 import java.util.concurrent.TimeUnit
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.DurationInt
 import scala.util.Success
 
 object MonixBackpressureSensorSpec extends SimpleTaskSuite {
-  private [backpressure] class TestStats extends StatsClient {
-    private val ints_ = ListBuffer[(IntegerMetric, Cause, Long)]()
-
-    def ints = ints_.toList
-
-    private val floats_ = ListBuffer[(FloatMetric, Cause, Double)]()
-
-    def floats = floats_.toList
-
-    override def measure(metric: IntegerMetric, cause: Cause, value: Long): Unit = {
-      ints_.append((metric, cause, value))
-    }
-
-    override def measure(metric: FloatMetric, cause: Cause, value: Double): Unit = {
-      floats_.append((metric, cause, value))
-    }
-  }
-
   class Ctx() {
     val scheduler = TestScheduler()
-    val stats = new TestStats()
+    val stats = new TestStatsClient()
     val clock: Clock = new Clock {
       override def microsMonotonic(): Long = scheduler.clockMonotonic(TimeUnit.MICROSECONDS)
     }

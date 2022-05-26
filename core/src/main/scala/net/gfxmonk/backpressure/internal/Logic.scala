@@ -1,15 +1,8 @@
 package net.gfxmonk.backpressure.internal
 
+import net.gfxmonk.backpressure.stats.StatsClient
+
 import java.util.concurrent.atomic.AtomicLong
-
-trait StatsClient {
-  def measure(metric: IntegerMetric, cause: Cause, value: Long): Unit
-  def measure(metric: FloatMetric, cause: Cause, value: Double): Unit
-}
-
-trait StatsClientBuilder {
-  def build(metricPrefix: String, sampleRate: Double, baseTags: Map[String, String]): StatsClient
-}
 
 sealed trait Cause
 object Cause {
