@@ -44,7 +44,7 @@ object BackpressureSensorTestMain extends TaskApp {
     for {
       _ <- Task(println(s"start: ${name}"))
       statsd <- buildStatsd
-      sensor = BackpressureSensor(statsd)
+      sensor = BackpressureSensor.statsD(statsd)
       _ <- Observable.repeat(())
         .delayOnNext(upstreamInterval)
         .mapEval(delayUpto(upstreamVariance))

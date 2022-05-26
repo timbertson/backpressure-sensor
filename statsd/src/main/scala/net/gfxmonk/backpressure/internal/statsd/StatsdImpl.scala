@@ -1,7 +1,7 @@
 package net.gfxmonk.backpressure.internal.statsd
 
 import com.timgroup.statsd.StatsDClient
-import net.gfxmonk.backpressure.internal.{Cause, FloatMetric, IntegerMetric, Metric, StatsClient}
+import net.gfxmonk.backpressure.internal.{Cause, FloatMetric, IntegerMetric, Metric, StatsClient, StatsClientBuilder}
 
 private [backpressure] class StatsdImpl(client: StatsDClient, metricPrefix: String, tags: Map[String, String], sampleRate: Double) extends StatsClient {
   private val histogramMetric = metricPrefix + ".micros"
@@ -36,5 +36,13 @@ private [backpressure] class StatsdImpl(client: StatsDClient, metricPrefix: Stri
 }
 
 private [backpressure] object StatsdImpl {
-  type Builder = (String, Map[String,String]) => StatsdImpl
+  def builder(statsDClient: StatsDClient): StatsClientBuilder = {
+    case (metricPrefix: String, sampleRate: Double, tags: Map[String, String]) =>
+    new StatsdImpl(
+      statsDClient,
+      metricPrefix,
+      tags,
+      sampleRate
+    )
+  }
 }

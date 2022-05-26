@@ -5,15 +5,19 @@ import _root_.monix.execution.{Ack, Scheduler}
 import _root_.monix.reactive.Observable.Operator
 import _root_.monix.reactive.observers.Subscriber
 import com.timgroup.statsd.StatsDClient
-import net.gfxmonk.backpressure.internal.{Clock, Logic, StatsClient}
+import net.gfxmonk.backpressure.internal.{Clock, Logic, StatsClient, StatsClientBuilder}
 import net.gfxmonk.backpressure.internal.statsd.StatsdImpl
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.Future
 
 object BackpressureSensor {
-  def apply(statsDClient: StatsDClient, sampleRate: Double = 1.0, baseTags: Map[String, String] = Map.empty): BackpressureSensor = {
-    new BackpressureSensor(statsDClient, sampleRate, baseTags)
+  def apply(statsClientBuilder: StatsClientBuilder, sampleRate: Double = 1.0, baseTags: Map[String, String] = Map.empty): BackpressureSensor = {
+    new BackpressureSensor(statsClientBuilder, sampleRate, baseTags)
+  }
+
+  def statsD(statsDClient: StatsDClient, sampleRate: Double = 1.0, baseTags: Map[String, String] = Map.empty): BackpressureSensor = {
+    BackpressureSensor(StatsdImpl.builder(statsDClient), sampleRate, baseTags)
   }
 
   private [backpressure] def operator[T](stats: StatsClient) : Operator[T,T] = {
@@ -43,14 +47,9 @@ object BackpressureSensor {
   }
 }
 
-class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double, baseTags: Map[String, String]) {
+class BackpressureSensor private(statsClientBuilder: StatsClientBuilder, sampleRate: Double, baseTags: Map[String, String]) {
 
   def operator[T](metricPrefix: String, tags: Map[String,String] = Map.empty) : Operator[T,T] = {
-    val stats = new StatsdImpl(statsClient,
-      metricPrefix = metricPrefix,
-      tags = baseTags ++ tags,
-      sampleRate = sampleRate
-    )
-    BackpressureSensor.operator(stats)
+    BackpressureSensor.operator(statsClientBuilder.build(metricPrefix, sampleRate, baseTags ++ tags))
   }
 }
