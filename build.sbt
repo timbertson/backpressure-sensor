@@ -33,7 +33,7 @@ lazy val statsd = (project in file("statsd")).settings(
   publicProjectSettings,
   name := "backpressure-sensor-statsd",
   libraryDependencies ++= Seq(
-    "com.datadoghq" % "java-dogstatsd-client" % "2.13.0"
+    "com.datadoghq" % "java-dogstatsd-client" % "4.0.0"
   )
 ).dependsOn(core)
 
