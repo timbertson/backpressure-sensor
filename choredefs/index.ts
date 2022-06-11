@@ -1,3 +1,3 @@
-import { defaultDockerOptions, default as Scala } from 'https://raw.githubusercontent.com/timbertson/chored-timbertson/e5523771dd2ebae1ba725d6e32723bcf136bd5dc/lib/scala.ts#main'
+import { defaultDockerOptions, default as Scala } from 'https://raw.githubusercontent.com/timbertson/chored-timbertson/9ce6bcd27906f824e8cbfb4e7f326856e93e53ee/lib/scala.ts#main'
 
 export default Scala({ repo: 'backpressure-sensor' })
