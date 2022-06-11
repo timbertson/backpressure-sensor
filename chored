@@ -42,7 +42,7 @@ _main() {
 		exec "$DENO" "$@"
 	fi
 
-	CHORED_MAIN_FALLBACK='https://raw.githubusercontent.com/timbertson/chored/9a51bbeedab0b30f9a434518f768aa50a6c42ae5/lib/main.ts'
+	CHORED_MAIN_FALLBACK='https://raw.githubusercontent.com/timbertson/chored/528f3020f1d383409ea0e3402b88bc2cf0f73e41/lib/main.ts'
 	CHORED_MAIN="${CHORED_MAIN:-$CHORED_MAIN_FALLBACK}"
 
 	if [ "${1:-}" = "--local" ]; then
