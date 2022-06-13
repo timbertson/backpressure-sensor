@@ -5,14 +5,19 @@ import _root_.akka.stream.{Attributes, FlowShape, Graph, Inlet, Outlet}
 import akka.NotUsed
 import com.timgroup.statsd.StatsDClient
 import net.gfxmonk.backpressure.internal
-import net.gfxmonk.backpressure.internal.{Clock, Logic, StatsClient}
+import net.gfxmonk.backpressure.internal.{Clock, Logic}
 import net.gfxmonk.backpressure.internal.statsd.StatsdImpl
+import net.gfxmonk.backpressure.stats.{StatsClient, StatsClientBuilder}
 
 import java.util.concurrent.atomic.AtomicLong
 
 object BackpressureSensor {
-  def apply(statsDClient: StatsDClient, sampleRate: Double = 1.0, baseTags: Map[String, String] = Map.empty): BackpressureSensor = {
-    new BackpressureSensor(statsDClient, sampleRate, baseTags)
+  def apply(statsClientBuilder: StatsClientBuilder, sampleRate: Double = 1.0, baseTags: Map[String, String] = Map.empty): BackpressureSensor = {
+    new BackpressureSensor(statsClientBuilder, sampleRate, baseTags)
+  }
+
+  def statsD(statsDClient: StatsDClient, sampleRate: Double = 1.0, baseTags: Map[String, String] = Map.empty): BackpressureSensor = {
+    BackpressureSensor(StatsdImpl.builder(statsDClient), sampleRate, baseTags)
   }
 
   private [backpressure] def flow[T](clock: Clock, stats: StatsClient) : Graph[FlowShape[T, T], NotUsed] = {
@@ -48,16 +53,11 @@ object BackpressureSensor {
   }
 }
 
-class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double, baseTags: Map[String, String]) {
+class BackpressureSensor private(statsClientBuilder: StatsClientBuilder, sampleRate: Double, baseTags: Map[String, String]) {
   def flow[T](metricPrefix: String, tags: Map[String, String] = Map.empty) : Graph[FlowShape[T, T], NotUsed] = {
-    val stats = new StatsdImpl(statsClient,
-      metricPrefix = metricPrefix,
-      tags = baseTags ++ tags,
-      sampleRate = sampleRate
-    )
     val clockImpl = new internal.Clock {
       override def microsMonotonic(): Long = System.nanoTime() / 1000L
     }
-    BackpressureSensor.flow[T](clockImpl, stats)
+    BackpressureSensor.flow[T](clockImpl, statsClientBuilder.build(metricPrefix, sampleRate, baseTags ++ tags))
   }
 }

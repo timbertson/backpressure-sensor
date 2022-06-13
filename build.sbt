@@ -42,7 +42,7 @@ lazy val monix = (project in file("monix")).settings(
   publicProjectSettings,
   name := "backpressure-sensor-monix",
   libraryDependencies ++= monixDeps,
-).dependsOn(core, statsd)
+).dependsOn(core % "compile->compile;test->test", statsd)
 
 lazy val akka = (project in file("akka")).settings(
   commonSettings,

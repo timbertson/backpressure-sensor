@@ -1,28 +1,25 @@
 package net.gfxmonk.backpressure.internal
 
+import net.gfxmonk.backpressure.stats.StatsClient
+
 import java.util.concurrent.atomic.AtomicLong
 
-private [backpressure] trait Clock {
-  def microsMonotonic(): Long
-}
-
-private [backpressure] sealed trait Cause
-private [backpressure] object Cause {
+sealed trait Cause
+object Cause {
   case object Waiting extends Cause
   case object Busy extends Cause
 }
 
-private [backpressure] sealed trait IntegerMetric
-private [backpressure] sealed trait FloatMetric
-private [backpressure] object Metric {
+sealed trait IntegerMetric
+sealed trait FloatMetric
+object Metric {
   case object Duration extends IntegerMetric
   case object Variance extends IntegerMetric
   case object Load extends FloatMetric
 }
 
-private [backpressure] trait StatsClient {
-  def measure(metric: IntegerMetric, cause: Cause, value: Long): Unit
-  def measure(metric: FloatMetric, cause: Cause, value: Double): Unit
+private [backpressure] trait Clock {
+  def microsMonotonic(): Long
 }
 
 private [backpressure] class Logic(clock: Clock, stats: StatsClient) {
