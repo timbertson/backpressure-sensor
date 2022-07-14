@@ -1,38 +1,36 @@
-package net.gfxmonk.backpressure.monix
+package net.gfxmonk.backpressure.fs2
 
-import monix.eval.Task
-import monix.execution.schedulers.TestScheduler
-import monix.reactive.Observable
+import cats.effect.laws.util.TestContext
+import cats.effect.{ContextShift, IO, Timer}
+import fs2.Stream
 import net.gfxmonk.backpressure.internal.Cause.{Busy, Waiting}
 import net.gfxmonk.backpressure.internal.Metric.{Duration, Load, Variance}
-import net.gfxmonk.backpressure.internal._
 import net.gfxmonk.backpressure.testkit.TestStats
-import weaver.monixcompat.SimpleTaskSuite
+import weaver.SimpleIOSuite
 
-import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.DurationInt
 import scala.util.Success
 
-object MonixBackpressureSensorSpec extends SimpleTaskSuite {
+object Fs2BackpressureSensorSpec extends SimpleIOSuite {
   class Ctx() {
-    val scheduler = TestScheduler()
+    val scheduler = TestContext()
     val stats = new TestStats()
-    val clock: Clock = new Clock {
-      override def microsMonotonic(): Long = scheduler.clockMonotonic(TimeUnit.MICROSECONDS)
-    }
+    val cs: ContextShift[IO] = scheduler.contextShift
   }
 
   pureTest("metrics") {
     val ctx = new Ctx()
-    val operator = BackpressureSensor.operator[Int](ctx.stats)
-    val future = Observable(1, 2, 3)
-      .mapEval(i => Task.sleep(i.micros).as(i))
-      .liftByOperator(operator)
-      .mapEval(i => Task.sleep((i * i).micros).as(i))
-      .completedL
-      .runToFuture(ctx.scheduler)
+    val pipe = BackpressureSensor.pipe[IO, Int](ctx.stats)(implicitly, ctx.scheduler.timer.clock)
+    implicit val timer: Timer[IO] = ctx.scheduler.timer
+    val future = (ctx.scheduler.contextShift.shift *> Stream(1, 2, 3)
+      .evalMap(i => IO.sleep(i.micros).as(i))
+      .through(pipe)
+      .evalMap(i => IO.sleep((i * i).micros).as(i))
+      .compile.drain
+    ).unsafeToFuture()
 
     ctx.scheduler.tick(999.days)
+
     expect(future.value == Some(Success(())))
       .and(expect(ctx.stats.ints.filter(_._1 == Duration) == List(
         // item 1
