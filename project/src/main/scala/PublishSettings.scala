@@ -14,4 +14,7 @@ object ScalaProject {
 		publishMavenStyle := true,
 		Test / publishArtifact := false,
 	)
+
+	val scala2Version = "2.13.7"
+	val scala3Version = "3.2.2"
 }

@@ -1,13 +1,19 @@
 import ScalaProject._
 
-val weaverVersion = "0.6.3"
+ThisBuild / crossScalaVersions := List(scala2Version, scala3Version)
+
+val weaverVersion = "0.6.15"
 val monixVersion = "3.4.0"
-val cats2Version = "2.3.0"
-val cats2Deps = List(
-  "org.typelevel" %% "cats-core" % cats2Version,
-  "org.typelevel" %% "cats-effect" % cats2Version,
+val catsVersion = "2.9.0"
+val catsEffect2Version = "2.5.4"
+val catsCoreDeps = List(
+  "org.typelevel" %% "cats-core" % catsVersion,
 )
-val monixDeps = cats2Deps ++ List(
+
+val ce2Deps = catsCoreDeps ++ List(
+  "org.typelevel" %% "cats-effect" % catsEffect2Version,
+)
+val monixDeps = ce2Deps ++ List(
     "io.monix" %% "monix" % monixVersion,
 )
 val weaverDeps = List(
@@ -49,9 +55,7 @@ lazy val monix = (project in file("monix")).settings(
   commonSettings,
   publicProjectSettings,
   name := "backpressure-sensor-monix",
-  libraryDependencies ++= List(
-    "org.typelevel" %% "cats-core" % cats2Version,
-    "org.typelevel" %% "cats-effect" % cats2Version,
+  libraryDependencies ++= ce2Deps ++ List(
     "io.monix" %% "monix" % monixVersion,
   )
 ).dependsOn(core, statsd, testkit % "test")
@@ -60,9 +64,9 @@ lazy val fs2Cats2 = (project in file("fs2-cats2")).settings(
   commonSettings,
   publicProjectSettings,
   name := "backpressure-sensor-fs2-cats2",
-  libraryDependencies ++= cats2Deps ++ List(
+  libraryDependencies ++= ce2Deps ++ List(
     "co.fs2" %% "fs2-core" % "2.5.10",
-    "org.typelevel" %% "cats-effect-laws" % cats2Version % "test", // provides TestContext
+    "org.typelevel" %% "cats-effect-laws" % catsEffect2Version % "test", // provides TestContext
 ),
 ).dependsOn(core, statsd, testkit % "test")
 
@@ -80,7 +84,7 @@ lazy val akka = (project in file("akka")).settings(
   publicProjectSettings,
   name := "backpressure-sensor-akka",
   libraryDependencies ++= Seq(
-    "com.typesafe.akka" %% "akka-stream" % "2.6.15",
+    "com.typesafe.akka" %% "akka-stream" % "2.6.19",
   ),
 ).dependsOn(core, statsd, testkit % "test")
 
