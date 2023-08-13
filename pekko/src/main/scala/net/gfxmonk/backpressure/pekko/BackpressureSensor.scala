@@ -1,8 +1,8 @@
-package net.gfxmonk.backpressure.akka
+package net.gfxmonk.backpressure.pekko
 
-import _root_.akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
-import _root_.akka.stream.{Attributes, FlowShape, Graph, Inlet, Outlet}
-import akka.NotUsed
+import _root_.org.apache.pekko.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
+import _root_.org.apache.pekko.stream.{Attributes, FlowShape, Graph, Inlet, Outlet}
+import org.apache.pekko.NotUsed
 import com.timgroup.statsd.StatsDClient
 import net.gfxmonk.backpressure.internal
 import net.gfxmonk.backpressure.internal.{Clock, Logic, StatsClient}
@@ -16,10 +16,10 @@ object BackpressureSensor {
   }
 
   private [backpressure] def flow[T](clock: Clock, stats: StatsClient) : Graph[FlowShape[T, T], NotUsed] = {
-    new AkkaFlow[T](new Logic(clock, stats))
+    new PekkoFlow[T](new Logic(clock, stats))
   }
 
-  private class AkkaFlow[T](logic: Logic) extends GraphStage[FlowShape[T, T]] {
+  private class PekkoFlow[T](logic: Logic) extends GraphStage[FlowShape[T, T]] {
     val in = Inlet[T]("in")
     val out = Outlet[T]("out")
 
