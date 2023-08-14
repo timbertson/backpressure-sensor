@@ -79,12 +79,12 @@ lazy val fs2Cats2 = (project in file("fs2-cats2")).settings(
 //  ),
 //).dependsOn(core, statsd)
 
-lazy val akka = (project in file("akka")).settings(
+lazy val pekko = (project in file("pekko")).settings(
   commonSettings,
   publicProjectSettings,
-  name := "backpressure-sensor-akka",
+  name := "backpressure-sensor-pekko",
   libraryDependencies ++= Seq(
-    "com.typesafe.akka" %% "akka-stream" % "2.6.19",
+    "org.apache.pekko" %% "pekko-stream" % "1.0.1",
   ),
 ).dependsOn(core, statsd, testkit % "test")
 
@@ -99,4 +99,4 @@ lazy val root = (project in file("."))
     name := "root",
     hiddenProjectSettings
   )
-  .aggregate(core, statsd, monix, akka, fs2Cats2, example, testkit)
+  .aggregate(core, statsd, monix, pekko, fs2Cats2, example, testkit)
