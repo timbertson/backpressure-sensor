@@ -2,7 +2,7 @@
 
 import scala.util.Try
 
-ThisBuild / scalaVersion := "2.13.7"
+ThisBuild / scalaVersion := "2.13.11"
 ThisBuild / organization := "net.gfxmonk"
 sonatypeProfileName := "net.gfxmonk"
 
