@@ -15,18 +15,17 @@ object BackpressureSensor {
   }
 
   private class LogicImpl[F[_]](underlying: Logic, tick: F[Unit])(implicit F: Sync[F]) {
-    val onWaitComplete = tick.map(_ => underlying.onWaitComplete())
+    def onWaitComplete(chunkSize: Long) = tick.map(_ => underlying.onWaitCompleteSized(chunkSize))
     def onBusyComplete(waitingDuration: Long) = tick.map(_ => underlying.onBusyComplete(waitingDuration))
   }
 
-  // TODO pipeChunked which uses unconsNonEmpty?
-  private [backpressure] def pipe[F[_], T](stats: StatsClient)(implicit F: Sync[F], C: cats.effect.Clock[F]): Pipe[F, T,T] = {
+  private [backpressure] def pipeChunked[F[_], T](stats: StatsClient)(implicit F: Sync[F], C: cats.effect.Clock[F]): Pipe[F, T,T] = {
     input => {
       Stream.eval(LogicImpl(stats)).flatMap { logic =>
-        def loop(s: Stream[F, T]): Pull[F, T, Unit] = s.pull.uncons1.flatMap {
+        def loop(s: Stream[F, T]): Pull[F, T, Unit] = s.pull.unconsNonEmpty.flatMap {
           case Some((chunk, tail)) => {
-            Pull.eval(logic.onWaitComplete).flatMap[F, T, Unit] { waitingDuration =>
-              Pull.output1[F, T](chunk) *>
+            Pull.eval(logic.onWaitComplete(chunk.size.toLong)).flatMap[F, T, Unit] { waitingDuration =>
+              Pull.output[F, T](chunk) *>
                 Pull.eval(logic.onBusyComplete(waitingDuration)) *>
                 loop(tail)
             }
@@ -37,6 +36,7 @@ object BackpressureSensor {
       }
     }
   }
+
 
   private object LogicImpl {
     def apply[F[_]](stats: StatsClient)(implicit F: Sync[F], C: cats.effect.Clock[F]): F[LogicImpl[F]] = {
@@ -60,6 +60,6 @@ class BackpressureSensor private(statsClient: StatsDClient, sampleRate: Double, 
       tags = baseTags ++ tags,
       sampleRate = sampleRate
     )
-    BackpressureSensor.pipe(stats)
+    BackpressureSensor.pipeChunked(stats)
   }
 }

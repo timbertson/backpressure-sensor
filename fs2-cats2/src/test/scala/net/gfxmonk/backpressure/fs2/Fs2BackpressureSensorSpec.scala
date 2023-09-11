@@ -4,12 +4,13 @@ import cats.effect.laws.util.TestContext
 import cats.effect.{ContextShift, IO, Timer}
 import fs2.Stream
 import net.gfxmonk.backpressure.internal.Cause.{Busy, Waiting}
-import net.gfxmonk.backpressure.internal.Metric.{Duration, Load, Variance}
+import net.gfxmonk.backpressure.internal.Metric.{Count, Duration, Load, Variance}
 import net.gfxmonk.backpressure.testkit.TestStats
 import weaver.SimpleIOSuite
 
 import scala.concurrent.duration.DurationInt
 import scala.util.Success
+import fs2.Chunk
 
 object Fs2BackpressureSensorSpec extends SimpleIOSuite {
   class Ctx() {
@@ -20,12 +21,14 @@ object Fs2BackpressureSensorSpec extends SimpleIOSuite {
 
   pureTest("metrics") {
     val ctx = new Ctx()
-    val pipe = BackpressureSensor.pipe[IO, Int](ctx.stats)(implicitly, ctx.scheduler.timer.clock)
+    val pipe = BackpressureSensor.pipeChunked[IO, Int](ctx.stats)(implicitly, ctx.scheduler.timer.clock)
     implicit val timer: Timer[IO] = ctx.scheduler.timer
-    val future = (ctx.scheduler.contextShift.shift *> Stream(1, 2, 3)
-      .evalMap(i => IO.sleep(i.micros).as(i))
+    val future = (ctx.scheduler.contextShift.shift *> Stream(Chunk(1), Chunk(2, 2, 2, 2), Chunk(3))
+      .evalMap(i => IO.sleep(i.head.get.micros).as(i))
+      .flatMap(chunk => Stream.chunk(chunk))
       .through(pipe)
-      .evalMap(i => IO.sleep((i * i).micros).as(i))
+      .chunks
+      .evalMap(i => { val t = i.head.get; IO.sleep((t * t).micros).as(i) })
       .compile.drain
     ).unsafeToFuture()
 
@@ -57,6 +60,11 @@ object Fs2BackpressureSensorSpec extends SimpleIOSuite {
         // item 2 -> item 3
         (Variance, Waiting, 1), // 2 -> 3
         (Variance, Busy, 5), // 4 -> 9
+      )))
+      .and(expect(ctx.stats.counts == List(
+        (Count, 1),
+        (Count, 4),
+        (Count, 1),
       )))
       .and(expect(ctx.stats.floats == List(
         (Load, Busy, 1.0 / (1 + 1)),

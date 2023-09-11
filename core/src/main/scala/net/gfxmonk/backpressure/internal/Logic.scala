@@ -12,9 +12,11 @@ private [backpressure] object Cause {
   case object Busy extends Cause
 }
 
+private [backpressure] sealed trait CountMetric
 private [backpressure] sealed trait IntegerMetric
 private [backpressure] sealed trait FloatMetric
 private [backpressure] object Metric {
+  case object Count extends CountMetric
   case object Duration extends IntegerMetric
   case object Variance extends IntegerMetric
   case object Load extends FloatMetric
@@ -22,6 +24,7 @@ private [backpressure] object Metric {
 
 private [backpressure] trait StatsClient {
   def measure(metric: IntegerMetric, cause: Cause, value: Long): Unit
+  def measure(metric: CountMetric, value: Long): Unit
   def measure(metric: FloatMetric, cause: Cause, value: Double): Unit
 }
 
@@ -46,6 +49,11 @@ private [backpressure] class Logic(clock: Clock, stats: StatsClient) {
 
   def onWaitComplete(): Long = {
     emitTime(Cause.Waiting)
+  }
+
+  def onWaitCompleteSized(size: Long): Long = {
+    stats.measure(Metric.Count, size)
+    onWaitComplete()
   }
 
   def onBusyComplete(waitingDuration: Long): Unit = {

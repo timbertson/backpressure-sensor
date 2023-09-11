@@ -2,11 +2,13 @@ package net.gfxmonk.backpressure.internal.statsd
 
 import com.timgroup.statsd.StatsDClient
 import net.gfxmonk.backpressure.internal.{Cause, FloatMetric, IntegerMetric, Metric, StatsClient}
+import net.gfxmonk.backpressure.internal.CountMetric
 
 private [backpressure] class StatsdImpl(client: StatsDClient, metricPrefix: String, tags: Map[String, String], sampleRate: Double) extends StatsClient {
   private val histogramMetric = metricPrefix + ".micros"
   private val loadMetric = metricPrefix + ".load"
   private val varianceMetric = metricPrefix + ".variance.micros"
+  private val countMetric = metricPrefix + ".count"
 
   private def createTagsFor(cause: String): Array[String] = {
     val tagStrings = tags.map { case (k,v) => s"$k:$v" }.toList
@@ -25,6 +27,12 @@ private [backpressure] class StatsdImpl(client: StatsDClient, metricPrefix: Stri
     metric match {
       case Metric.Duration => client.histogram(histogramMetric, value, sampleRate, tagsFor(cause):_*)
       case Metric.Variance => client.count(varianceMetric, value, sampleRate, tagsFor(cause):_*)
+    }
+  }
+
+  override def measure(metric: CountMetric, value: Long): Unit = {
+    metric match {
+      case Metric.Count => client.count(countMetric, value, sampleRate)
     }
   }
 
