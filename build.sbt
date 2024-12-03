@@ -47,8 +47,11 @@ lazy val statsd = (project in file("statsd")).settings(
   publicProjectSettings,
   name := "backpressure-sensor-statsd",
   libraryDependencies ++= Seq(
-    "com.datadoghq" % "java-dogstatsd-client" % "4.0.0"
-  )
+    "com.datadoghq" % "java-dogstatsd-client" % "4.4.3"
+  ),
+  scalacOptions ~= (_.filterNot(Set(
+    "-Wunused:nowarn",
+  ))),
 ).dependsOn(core)
 
 lazy val monix = (project in file("monix")).settings(

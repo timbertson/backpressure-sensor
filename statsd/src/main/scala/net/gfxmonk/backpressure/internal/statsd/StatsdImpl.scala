@@ -1,5 +1,6 @@
 package net.gfxmonk.backpressure.internal.statsd
 
+import scala.annotation.nowarn
 import com.timgroup.statsd.StatsDClient
 import net.gfxmonk.backpressure.internal.{Cause, FloatMetric, IntegerMetric, Metric, StatsClient}
 
@@ -21,6 +22,7 @@ private [backpressure] class StatsdImpl(client: StatsDClient, metricPrefix: Stri
     case Cause.Busy => busyTags
   }
 
+  @nowarn // scala 2 varargs syntax
   override def measure(metric: IntegerMetric, cause: Cause, value: Long): Unit = {
     metric match {
       case Metric.Duration => client.histogram(histogramMetric, value, sampleRate, tagsFor(cause):_*)
@@ -28,6 +30,7 @@ private [backpressure] class StatsdImpl(client: StatsDClient, metricPrefix: Stri
     }
   }
 
+  @nowarn // scala 2 varargs syntax
   override def measure(metric: FloatMetric, cause: Cause, value: Double): Unit = {
     metric match {
       case Metric.Load => client.histogram(loadMetric, value, sampleRate, tagsFor(cause):_*)
