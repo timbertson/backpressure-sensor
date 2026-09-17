@@ -4,7 +4,7 @@ import scala.util.Try
 import xerial.sbt.Sonatype.sonatypeCentralHost
 
 
-ThisBuild / scalaVersion := "2.13.14"
+ThisBuild / scalaVersion := "2.13.18"
 ThisBuild / organization := "net.gfxmonk"
 ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
 ThisBuild / sonatypeProfileName := "net.gfxmonk"

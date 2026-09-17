@@ -3,4 +3,5 @@ import Scala from 'https://raw.githubusercontent.com/timbertson/chored-timbertso
 export default Scala({
 	repo: 'backpressure-sensor',
 	scalaMajorVersions: [2,3],
+	scala2Version: '2.13.18'
 })
